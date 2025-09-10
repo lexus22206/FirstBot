@@ -35,5 +35,10 @@ app.listen(port, () => {
     console.log("Bot ranning on port", port);
 
     //встановлюємо webhook
-    bot.setWebHook(`${url}/bot${token}`).then(res => console.log("Webhook set:", res)).catch(err => console.error("Webhook error:", err));
+    bot.setWebHook(`${url}/bot${token}`)
+    .then(res => {
+    console.log("Webhook set response:", res);
+  })
+  .catch(err => {
+    console.error("Webhook error:", err.response?.body || err);
 });
