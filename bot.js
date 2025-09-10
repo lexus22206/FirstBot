@@ -13,7 +13,7 @@ const url = 'https://9a5d27ff2e4c.ngrok-free.app';
 
 
 //встановлюємо webhook
-bot.setWebHook("https://firstbot-san3.onrender.com/" + token);
+bot.setWebHook("https://firstbot-san3.onrender.com" + token);
 
 //приймаємо повідомлення від Telegram
 app.post(`/bot${token}`, (req, res) => {
@@ -34,6 +34,4 @@ bot.on("message", (msg) => {
 });
 
 //запускаємо сервер
-app.listen(port, () => {
-    console.log("Bot ranning on port", port);
-});
+app.listen(port, () => console.log("Bot ranning on port", port));
