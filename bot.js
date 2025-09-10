@@ -9,11 +9,11 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.json());
 
 //URL з ngrok
-const url = 'https://9a5d27ff2e4c.ngrok-free.app';
+const url = 'https://firstbot-san3.onrender.com/';
 
 
 //встановлюємо webhook
-bot.setWebHook("https://firstbot-san3.onrender.com/" + token);
+bot.setWebHook(`${url}/bot${token}`);
 
 //приймаємо повідомлення від Telegram
 app.post(`/bot${token}`, (req, res) => {
@@ -23,7 +23,7 @@ app.post(`/bot${token}`, (req, res) => {
 
 //реакція на команду /start
 bot.onText(/\/start/, (msg) => {
-   bot.sendMessage(msg.chat.id, `Привіт! ${msg.from.first_name}! Я працюю через Webhook.`);
+   bot.sendMessage(msg.chat.id, `Привіт! ${msg.from.first_name}! Я працюю на Render.`);
 });
 
 //exo
