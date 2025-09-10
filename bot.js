@@ -11,10 +11,6 @@ app.use(bodyParser.json());
 //URL з ngrok
 const url = 'https://firstbot-san3.onrender.com';
 
-
-//встановлюємо webhook
-bot.setWebHook(`${url}/bot${token}`);
-
 //приймаємо повідомлення від Telegram
 app.post(`/bot${token}`, (req, res) => {
     bot.processUpdate(req.body);
@@ -37,4 +33,7 @@ bot.on("message", (msg) => {
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log("Bot ranning on port", port);
+
+    //встановлюємо webhook
+    bot.setWebHook(`${url}/bot${token}`);
 });
