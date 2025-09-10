@@ -34,4 +34,4 @@ bot.on("message", (msg) => {
 });
 
 //запускаємо сервер
-app.listen(port, () => console.log("Bot ranning on port", port));
+app.listen(port, () => console.log("Bot running on port", port));
