@@ -9,7 +9,7 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.json());
 
 //URL з ngrok
-const url = 'https://firstbot-san3.onrender.com/';
+const url = 'https://firstbot-san3.onrender.com';
 
 
 //встановлюємо webhook
