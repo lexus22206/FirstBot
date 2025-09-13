@@ -2,13 +2,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const TelegramBot = require('node-telegram-bot-api');
 const token = '8287055755:AAFDyxXqAEr6iw0Jc3IZYxJHwIL_4hnbqGM';
-const bot = new TelegramBot(token);
+const bot = new TelegramBot(token, { polling: false });
 const app = express();
 
 
 app.use(bodyParser.json());
 
-//URL з ngrok
+//URL з Render
 const url = 'https://firstbot-san3.onrender.com';
 
 //приймаємо повідомлення від Telegram
@@ -32,7 +32,7 @@ bot.on("message", (msg) => {
 //запускаємо сервер
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-    console.log("Bot ranning on port", port);
+    console.log("Bot running on port", port);
 
     //встановлюємо webhook
     bot.setWebHook(`${url}/bot${token}`)
@@ -40,6 +40,10 @@ app.listen(port, () => {
         console.log("Webhook set response:", res);
     })
         .catch(err => {
-        console.error("Webhook error:", err.response?.body || err);
+        if(err.response && err.response.body) {
+            console.error("Telegram response:", err.response.body);
+        } else {
+            console.error("Webhook error:", err);
+        }
     });
 });
