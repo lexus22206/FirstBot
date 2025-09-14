@@ -23,6 +23,41 @@ bot.onText(/\/start/, (msg) => {
    bot.sendMessage(msg.chat.id, `Привіт! ${msg.from.first_name}! Я працюю на Render.`);
 });
 
+//Конвертер
+const axios = require("axios");
+
+bot.onText(/\/usd (\d+)/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    const amount = parseFloat(match[1]);
+
+    try {
+        const response = await axios.get("https://api.exchangerate.host/latest?base=USD&symbols=UAH");
+        const rate = response.date.rates.UAH;
+
+        const converted = (amount * rate).toFixed(2);
+        bot.sendMessage(chatId, `${amount} USD = ${converted} UAH (курс: ${rate})`);
+    } catch (err) {
+        console.error("Currency error:", err.message);
+        bot.sendMessage(chatId, "Не вдалося отримати курс валют.");
+    }
+});
+
+bot.onText(/\/eur (\d+)/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    const amount = parseFloat(match[1]);
+
+    try {
+        const response = await axios.get("https://api.exchangerate.host/latest?base=EUR&symbols=UAH");
+        const rate = response.date.rates.UAH;
+
+        const converted = (amount * rate).toFixed(2);
+        bot.sendMessage(chatId, `${amount} EUR = ${converted} UAH (курс: ${rate})`);
+    } catch (err) {
+        console.error("Currency error:", err.message);
+        bot.sendMessage(chatId, "Не вдалося отримати курс валют.");
+    }
+});
+
 //exo для інших повідомленнь
 bot.on("message", (msg) => {
     if(msg.text && msg.text !== '/start') {
