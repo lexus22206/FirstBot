@@ -1,17 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const TelegramBot = require('node-telegram-bot-api');
-const token = '8287055755:AAFDyxXqAEr6iw0Jc3IZYxJHwIL_4hnbqGM';
-const bot = new TelegramBot(token, { polling: false });
-const app = express();
 
+const token = '8287055755:AAFDyxXqAEr6iw0Jc3IZYxJHwIL_4hnbqGM';
+const url = 'https://firstbot-san3.onrender.com';
+
+//Створюємо бота в режимі webhook
+const bot = new TelegramBot(token, { webHook: true });
+const app = express();
 
 app.use(bodyParser.json());
 
-//URL з Render
-const url = 'https://firstbot-san3.onrender.com';
-
-//приймаємо повідомлення від Telegram
+//Маршрут для прийому апдейтів від Telegram
 app.post(`/bot${token}`, (req, res) => {
     bot.processUpdate(req.body);
     res.sendStatus(200);
@@ -22,7 +22,7 @@ bot.onText(/\/start/, (msg) => {
    bot.sendMessage(msg.chat.id, `Привіт! ${msg.from.first_name}! Я працюю на Render.`);
 });
 
-//exo
+//exo для інших повідомленнь
 bot.on("message", (msg) => {
     if(msg.text && msg.text !== '/start') {
         bot.sendMessage(msg.chat.id, `Ти написав: ${msg.text}`);
@@ -31,19 +31,13 @@ bot.on("message", (msg) => {
 
 //запускаємо сервер
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log("Bot running on port", port);
+app.listen(port, async () => {
+    console.log(`Bot running on port ${port}`);
 
-    //встановлюємо webhook
-    bot.setWebHook(`${url}/bot${token}`)
-        .then(res => {
-        console.log("Webhook set response:", res);
-    })
-        .catch(err => {
-        if(err.response && err.response.body) {
-            console.error("Telegram response:", err.response.body);
-        } else {
-            console.error("Webhook error:", err);
-        }
-    });
+    try {
+        const res = await bot.setWebHook(`${url}/bot${token}`);
+        console.log("Webhook set:", res);
+    } catch(err) {
+        console.error("Webhook error:", err.response?.body || err);
+    }
 });
