@@ -19,12 +19,14 @@ app.post(`/bot${token}`, (req, res) => {
 
 //реакція на команду /start
 bot.onText(/\/start/, (msg) => {
+    console.log("Отримано команду /start від:", msg.from.username || msg.from.first_name);
    bot.sendMessage(msg.chat.id, `Привіт! ${msg.from.first_name}! Я працюю на Render.`);
 });
 
 //exo для інших повідомленнь
 bot.on("message", (msg) => {
     if(msg.text && msg.text !== '/start') {
+        console.log("Отримано повідомлення:", msg.text, "від", msg.from.username || msg.from.first_name_name);
         bot.sendMessage(msg.chat.id, `Ти написав: ${msg.text}`);
     }
 });
