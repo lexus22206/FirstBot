@@ -56,7 +56,7 @@ bot.onText(/\/usd (\d+(\.\d+)?)/, async (msg, match) => {
         const converted = (amount * rate).toFixed(2);
         bot.sendMessage(chatId, `${amount} USD = ${converted} UAH (курс: ${rate})`);
     } catch (err) {
-        console.error("Currency error:", err.message || err);
+        console.error("Currency error (USD):", err.message || err);
         bot.sendMessage(chatId, "Не вдалося отримати курс валют.");
     }
 });
@@ -72,7 +72,7 @@ bot.onText(/\/eur (\d+(\.\d+)?)/, async (msg, match) => {
         const converted = (amount * rate).toFixed(2);
         bot.sendMessage(chatId, `${amount} EUR = ${converted} UAH (курс: ${rate})`);
     } catch (err) {
-        console.error("Currency error:", err.message || err);
+        console.error("Currency error (EUR):", err.message || err);
         bot.sendMessage(chatId, "Не вдалося отримати курс валют.");
     }
 });
