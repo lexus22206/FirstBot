@@ -51,7 +51,8 @@ bot.onText(/\/usd (\d+(\.\d+)?)/, async (msg, match) => {
     const amount = parseFloat(match[1]);
     try {
         const response = await axios.get("https://api.exchangerate.host/latest?base=USD&symbols=UAH");
-        const rate = response.data.rates.UAH;
+        console.log("API USD Response:", response.data); //Лог для перевірки 
+        const rate = response.data?.rates?.UAH;
         if(!rate) throw new Error('No rate in response');
         const converted = (amount * rate).toFixed(2);
         bot.sendMessage(chatId, `${amount} USD = ${converted} UAH (курс: ${rate})`);
@@ -67,7 +68,8 @@ bot.onText(/\/eur (\d+(\.\d+)?)/, async (msg, match) => {
     const amount = parseFloat(match[1]);
     try {
         const response = await axios.get("https://api.exchangerate.host/latest?base=EUR&symbols=UAH");
-        const rate = response.data.rates.UAH;
+        console.log("API EUR Response:", response.data); //Лог для перевірки 
+        const rate = response.data?.rates?.UAH;
         if (!rate) throw new Error('No rate in response');
         const converted = (amount * rate).toFixed(2);
         bot.sendMessage(chatId, `${amount} EUR = ${converted} UAH (курс: ${rate})`);
