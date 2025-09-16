@@ -80,7 +80,7 @@ bot.onText(/\/eur (\d+(\.\d+)?)/, async (msg, match) => {
 //Універсальний конвертер "100 USD UAH"
 bot.on('message', async (msg) => {
     if(!msg.text) return;
-    if(msg.rext.startsWith('/')) return; //Команди обробляються окремо
+    if(msg.text.startsWith('/')) return; //Команди обробляються окремо
 
     console.log("Received message:", msg.text, "from", msg.from && (msg.from.username || msg.from.first_name));
 
