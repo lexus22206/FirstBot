@@ -1,9 +1,12 @@
+require('dotenv').config();//Підключаємо .env
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 
-const token = process.env.BOT_TOKEN || '8287055755:AAFDyxXqAEr6iw0Jc3IZYxJHwIL_4hnbqGM';
+const currencyApiKey = process.env.CURRENCY_API_KEY;
+const token = process.env.BOT_TOKEN;
 const url = process.env.BOT_URL || 'https://firstbot-san3.onrender.com';
 
 //Визначаємо режим: production -> webhook, інакше -> polling
@@ -50,9 +53,9 @@ bot.onText(/\/usd (\d+(\.\d+)?)/, async (msg, match) => {
     const chatId = msg.chat.id;
     const amount = parseFloat(match[1]);
     try {
-        const response = await axios.get("https://api.exchangerate.host/latest?base=USD&symbols=UAH");
+        const response = await axios.get(`https://api.currencylayer.com/live?access_key=${currencyApiKey}&currencies=UAH&source=USD`);
         console.log("API USD Response:", response.data); //Лог для перевірки 
-        const rate = response.data?.rates?.UAH;
+        const rate = response.data?.quotes?.UAH;
         if(!rate) throw new Error('No rate in response');
         const converted = (amount * rate).toFixed(2);
         bot.sendMessage(chatId, `${amount} USD = ${converted} UAH (курс: ${rate})`);
@@ -67,9 +70,9 @@ bot.onText(/\/eur (\d+(\.\d+)?)/, async (msg, match) => {
     const chatId = msg.chat.id;
     const amount = parseFloat(match[1]);
     try {
-        const response = await axios.get("https://api.exchangerate.host/latest?base=EUR&symbols=UAH");
+        const response = await axios.get(`https://api.currencylayer.com/live?access_key=${currencyApiKey}&currencies=UAH&source=EUR`);
         console.log("API EUR Response:", response.data); //Лог для перевірки 
-        const rate = response.data?.rates?.UAH;
+        const rate = response.data?.quotes?.UAH;
         if (!rate) throw new Error('No rate in response');
         const converted = (amount * rate).toFixed(2);
         bot.sendMessage(chatId, `${amount} EUR = ${converted} UAH (курс: ${rate})`);
@@ -94,7 +97,7 @@ bot.on('message', async (msg) => {
 
         if(!isNaN(amount)) {
             try {
-                const resp = await axios.get(`https://api.exchangerate.host/convert?from=${from}&to=${to}&amount=${amount}`);
+                const resp = await axios.get(`http://api.currencylayer.com/convert?access_key=${currencyApiKey}&from=${from}&to=${to}&amount=${amount}`);
                 if(resp.data && typeof resp.data.result !== 'undefined') {
                     bot.sendMessage(msg.chat.id, `${amount} ${from} = ${resp.data.result.toFixed(2)} ${to}`);
                 } else {
