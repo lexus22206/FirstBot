@@ -88,7 +88,7 @@ bot.on('message', async (msg) => {
         bot.sendMessage(chatId, "Введіть суму у USD, яку потрібно конвертувати");
         return;
     }
-    if(trxt === "EUR → UAH") {
+    if(text === "EUR → UAH") {
         bot.sendMessage(chatId, "Введіть суму у EUR:");
         return;
     }
