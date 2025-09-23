@@ -83,7 +83,7 @@ bot.onText(/\/menu/, (msg) => {
 //Реакція на кнопки
 bot.on('message', async (msg) => {
     const text = msg.text;
-    constchatId = msg.chat.id;
+    const chatId = msg.chat.id;
 
     if(text === "USD → UAH") {
         bot.sendMessage(chatId, "Введіть суму у USD, яку потрібно конвертувати");
@@ -105,6 +105,34 @@ bot.on('message', async (msg) => {
         bot.sendMessage(chatId, "Введіть у форматі `100 USD EUR`", {parse_mode: "Markdown"});
         return;
     }
+
+    //Універсальний конвертер "100 USD UAH"
+    if(!msg.text  || msg.text.startsWith('/')) return;
+
+    const parts = msg.text.trim().split(/\s+/);
+    if(parts.length === 3) {
+        const amount = parseFloat(parts[0].replace(',', '.'));
+        const from = parts[1].toUpperCase();
+        const to = parts[2].toUpperCase();
+
+        if(!isNaN(amount)) {
+            try {
+                const response = await axios.get(`https://api.currencylayer.com/convert?access_key=${currencyApiKey}&from=${from}&to=${to}&amount=${amount}`);
+                if(response.data.success) {
+                    bot.sendMessage(msg.chat.id, `${amount} ${from} = ${response.data.result.toFixed(2)} ${to}`);
+                } else {
+                    bot.sendMessage(msg.chat.id, "Не вдалося конвертувати валюту. Перевір правельність коду валют.");
+                }
+            } catch (err) {
+                console.error('Convert error:', err.message);
+                bot.sendMessage(msg.chat.id, "Помилка при отриманні курсу. Спробуйте пізніше.");
+            }
+            return
+        }
+    }
+
+    //Якщо не конвертер, то ехо
+    bot.sendMessage(msg.chat.id, `Ти написав: ${msg.text}`);
 });
 
 //Help
@@ -158,36 +186,6 @@ bot.onText(/\/eur (\d+(\.\d+)?)/, async (msg, match) => {
         console.error("Currency error (EUR):", err.message);
         bot.sendMessage(chatId, "Не вдалося отримати курс валют.");
     }
-});
-
-//Універсальний конвертер "100 USD UAH"
-bot.on('message', async (msg) => {
-    if(!msg.text  || msg.text.startsWith('/')) return;
-
-    const parts = msg.text.trim().split(/\s+/);
-    if(parts.length === 3) {
-        const amount = parseFloat(parts[0].replace(',', '.'));
-        const from = parts[1].toUpperCase();
-        const to = parts[2].toUpperCase();
-
-        if(!isNaN(amount)) {
-            try {
-                const response = await axios.get(`https://api.currencylayer.com/convert?access_key=${currencyApiKey}&from=${from}&to=${to}&amount=${amount}`);
-                if(response.data.success) {
-                    bot.sendMessage(msg.chat.id, `${amount} ${from} = ${response.data.result.toFixed(2)} ${to}`);
-                } else {
-                    bot.sendMessage(msg.chat.id, "Не вдалося конвертувати валюту. Перевір правельність коду валют.");
-                }
-            } catch (err) {
-                console.error('Convert error:', err.message);
-                bot.sendMessage(msg.chat.id, "Помилка при отриманні курсу. Спробуйте пізніше.");
-            }
-            return
-        }
-    }
-
-    //Якщо не конвертер, то ехо
-    bot.sendMessage(msg.chat.id, `Ти написав: ${msg.text}`);
 });
 
 // ---- запуск сервера (тільки для webhook) або просто лог для polling ----
