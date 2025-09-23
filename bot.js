@@ -4,7 +4,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
-
+const dotenv = require('dotenv');
+dotenv.config();
 const currencyApiKey = process.env.CURRENCY_API_KEY;
 const token = process.env.BOT_TOKEN;
 const url = process.env.BOT_URL || 'https://firstbot-san3.onrender.com';
@@ -66,15 +67,15 @@ bot.onText(/\/start/, (msg) => {
 
 //Меню з кнопками
 bot.onText(/\/menu/, (msg) => {
-    bot.sendMessage(msg.chat.id, "📌 Оберіть валюту:", {
-      reply_markup: {
-        keyboard: [
-          ["USD → UAH", "EUR → UAH"],
-          ["UAH → USD", "UAH → EUR"],
-          ["Інша конвертація"]
-        ],
-        resize_keyboard: true,
-        one_time_keyboard: false
+    bot.sendMessage(msg.chat.id, "Оберіть валюту для конвертації:", {
+        reply_markup: {
+            keyboard: [
+                ["USD → UAH", "EUR → UAH"],
+                ["UAH → USD", "UAH → EUR"],
+                ["Інша конвертація"]
+            ],
+            resize_keyboard: true, //робить кнопки компактними
+            one_time_keyboard: false //меню не зникає після натискання
         }
     });
 });
