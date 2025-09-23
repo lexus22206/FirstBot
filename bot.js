@@ -53,7 +53,7 @@ bot.setMyCommands([
 
 // /start
 bot.onText(/\/start/, (msg) => {
-    botsendMessage(msg.chat.id,
+    bot.sendMessage(msg.chat.id,
         `👋 Привіт, ${msg.from.first_name || 'друг'}!\n\n` +
         "Я валютний конвертер.\n" +
         "Приклади:\n" +
