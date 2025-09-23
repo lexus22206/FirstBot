@@ -26,10 +26,15 @@ if(isProduction) {
 const app = express();
 app.use(bodyParser.json());
 
+//Кінцева точка перевірки працездатності
+app.get('/',(req, res) => {
+    res.send('Bot is running')
+})
+
 //Якщо webhook-режим, то реєструємо маршрут для прийому апдейтів
 if(isProduction) {
     app.post(`/bot${token}`, (req, res) => {
-        console.log('Received update (webhook):', JSON.stringify(req.body).slice(0, 1000));
+        console.log('Received update (webhook):', JSON.stringify(req.body).slice(0, 500));
         try {
             bot.processUpdate(req.body);
             res.sendStatus(200);
@@ -44,8 +49,8 @@ if(isProduction) {
 
 // /start
 bot.onText(/\/start/, (msg) => {
-    console.log("Отримано команду /start від:",msg.from && (msg.from.username || msg.from.first_name));
-    bot.sendMessage(msg.chat.id, `Привіт! ${msg.from.first_name || 'друг'}! Я валютний конвертер \nПриклад: 100 USD UAH`);
+    console.log("Отримано команду /start від:", msg.from.username || msg.from.first_name);
+    bot.sendMessage(msg.chat.id, `Привіт! ${msg.from.first_name || 'друг'}! Я валютний конвертер \nПриклад: 100 USD UAH\nКоманди:\n/usd 100\n/eur 100`);
 });
 
 // /usd N
@@ -54,14 +59,16 @@ bot.onText(/\/usd (\d+(\.\d+)?)/, async (msg, match) => {
     const amount = parseFloat(match[1]);
     try {
         const response = await axios.get(`https://api.currencylayer.com/live?access_key=${currencyApiKey}&currencies=UAH&source=USD`);
-        console.log("API USD Response:", response.data); //Лог для перевірки 
-        const rate = response.data?.quotes?.UAH;
+        if(!response.data.success) {
+            throw new Error(response.data.error?.info || 'API error');
+        }
+        const rate = response.data?.quotes?.USDUAH;
         if(!rate) throw new Error('No rate in response');
         const converted = (amount * rate).toFixed(2);
         bot.sendMessage(chatId, `${amount} USD = ${converted} UAH (курс: ${rate})`);
     } catch (err) {
-        console.error("Currency error (USD):", err.message || err);
-        bot.sendMessage(chatId, "Не вдалося отримати курс валют.");
+        console.error("Currency error (USD):", err.message);
+        bot.sendMessage(chatId, "Не вдалося отримати курс валют.Спробуйте пізніше.");
     }
 });
 
@@ -70,24 +77,25 @@ bot.onText(/\/eur (\d+(\.\d+)?)/, async (msg, match) => {
     const chatId = msg.chat.id;
     const amount = parseFloat(match[1]);
     try {
-        const response = await axios.get(`https://api.currencylayer.com/live?access_key=${currencyApiKey}&currencies=UAH&source=EUR`);
-        console.log("API EUR Response:", response.data); //Лог для перевірки 
-        const rate = response.data?.quotes?.UAH;
-        if (!rate) throw new Error('No rate in response');
-        const converted = (amount * rate).toFixed(2);
-        bot.sendMessage(chatId, `${amount} EUR = ${converted} UAH (курс: ${rate})`);
+        const response = await axios.get(`https://api.currencylayer.com/live?access_key=${currencyApiKey}&currencies=UAH,EUR&source=USD`);
+        if(!response.data.success) {
+            throw new Error(response.data.error?.info || 'API error');
+        }
+        const usdUah = response.data.quotes.USDUAH;
+        const usdEur = response.data.quotes.USDEUR;
+        if (!usdUah || !usdEur) throw new Error('No rate in response');
+        const eurUah = usdUah / usdEur;
+        const converted = (amount * eurUah).toFixed(2);
+        bot.sendMessage(chatId, `${amount} EUR = ${converted} UAH (курс: ${eurUah.toFixed(4)})`);
     } catch (err) {
-        console.error("Currency error (EUR):", err.message || err);
+        console.error("Currency error (EUR):", err.message);
         bot.sendMessage(chatId, "Не вдалося отримати курс валют.");
     }
 });
 
 //Універсальний конвертер "100 USD UAH"
 bot.on('message', async (msg) => {
-    if(!msg.text) return;
-    if(msg.text.startsWith('/')) return; //Команди обробляються окремо
-
-    console.log("Received message:", msg.text, "from", msg.from && (msg.from.username || msg.from.first_name));
+    if(!msg.text  || msg.text.startsWith('/')) return;
 
     const parts = msg.text.trim().split(/\s+/);
     if(parts.length === 3) {
@@ -97,14 +105,14 @@ bot.on('message', async (msg) => {
 
         if(!isNaN(amount)) {
             try {
-                const resp = await axios.get(`http://api.currencylayer.com/convert?access_key=${currencyApiKey}&from=${from}&to=${to}&amount=${amount}`);
-                if(resp.data && typeof resp.data.result !== 'undefined') {
-                    bot.sendMessage(msg.chat.id, `${amount} ${from} = ${resp.data.result.toFixed(2)} ${to}`);
+                const response = await axios.get(`https://api.currencylayer.com/convert?access_key=${currencyApiKey}&from=${from}&to=${to}&amount=${amount}`);
+                if(response.data.success) {
+                    bot.sendMessage(msg.chat.id, `${amount} ${from} = ${response.data.result.toFixed(2)} ${to}`);
                 } else {
                     bot.sendMessage(msg.chat.id, "Не вдалося конвертувати валюту. Перевір правельність коду валют.");
                 }
             } catch (err) {
-                console.error('Convert error:', err.message || err);
+                console.error('Convert error:', err.message);
                 bot.sendMessage(msg.chat.id, "Помилка при отриманні курсу. Спробуйте пізніше.");
             }
             return
@@ -119,16 +127,16 @@ bot.on('message', async (msg) => {
 const port = process.env.PORT || 3000;
 if(isProduction) {
     app.listen(port, async () => {
-        console.log(`Server running on port ${port} (webhook mode). App URL: ${url}`);
+        console.log(`Server running on port ${port}`);
     
         try {
-            const res = await bot.setWebHook(`${url}/bot${token}`);
-            console.log("Webhook set:", res);
-        } catch(err) {
-            console.error("Webhook error:", (err.response && err.response.data) || err.message || err);
+            await bot.setWebHook(`${url}/bot${token}`);
+            console.log("Webhook set successfully");
+        } catch (err) {
+            console.error("Webhook error:",  err.message);
         }
     });
 } else {
-    console.log('Started in local mode. No express server listening for webhook.');
+    console.log('Started in local polling mode.');
 }
 
