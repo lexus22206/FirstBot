@@ -23,6 +23,27 @@ if(isProduction) {
     console.log('Bot running locally in polling mode');
 }
 
+const app = express();
+app.use(bodyParser.json());
+
+//Кінцева точка перевірки працездатності
+app.get('/',(req, res) => {
+    res.send('Bot is running')
+})
+
+//Якщо webhook-режим, то реєструємо маршрут для прийому апдейтів
+if(isProduction) {
+    app.post(`/bot${token}`, (req, res) => {
+        console.log('Received update (webhook):', JSON.stringify(req.body).slice(0, 500));
+        try {
+            bot.processUpdate(req.body);
+            res.sendStatus(200);
+        } catch (err) {
+            console.error('processUpdate error:', err);
+            res.sendStatus(500);
+        }
+    });
+}
 //Меню команд
 bot.setMyCommands([
     { command: '/start', description: 'Запустити бота' },
@@ -88,28 +109,6 @@ bot.onText(/\/help/, (msg) => {
         "Або скористайся меню /menu 🚀"
     );
 });
-
-const app = express();
-app.use(bodyParser.json());
-
-//Кінцева точка перевірки працездатності
-app.get('/',(req, res) => {
-    res.send('Bot is running')
-})
-
-//Якщо webhook-режим, то реєструємо маршрут для прийому апдейтів
-if(isProduction) {
-    app.post(`/bot${token}`, (req, res) => {
-        console.log('Received update (webhook):', JSON.stringify(req.body).slice(0, 500));
-        try {
-            bot.processUpdate(req.body);
-            res.sendStatus(200);
-        } catch (err) {
-            console.error('processUpdate error:', err);
-            res.sendStatus(500);
-        }
-    });
-}
 
 // ---- Команди та логіка бота ---- 
 
