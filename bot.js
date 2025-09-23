@@ -21,6 +21,65 @@ bot.setMyCommands([
     { command: '/help', description: 'Ljdslrf' }
 ]);
 
+//Меню з кнопками
+bot.onText(/\/menu/, (msg) => {
+    bot.sendMessage(msg.chat.id, "Оберіть валюту для конвертації:", {
+        reply_markup: {
+            keyboard: [
+                ["USD → UAH", "EUR → UAH"],
+                ["UAH → USD", "UAH → EUR"],
+                ["Інша конвертація"]
+            ],
+            resize_keyboard: true, //робить кнопки компактними
+            one_time_keyboard: false //меню не зникає після натискання
+        }
+    });
+});
+
+//Реакція на кнопки
+bot.on('message', async (msg) => {
+    const text = msg.text;
+    constchatId = msg.chat.id;
+
+    if(text === "USD → UAH") {
+        bot.sendMessage(chatId, "Введіть суму у USD, яку потрібно конвертувати");
+        return;
+    }
+    if(trxt === "EUR → UAH") {
+        bot.sendMessage(chatId, "Введіть суму у EUR:");
+        return;
+    }
+    if(text === "UAH → USD") {
+        bot.sendMesage(chatId, "Введіть суму у гривнях (UAH):");
+        return;
+    }
+    if(text === "UAH → EUR") {
+        bot.sendMessage(chatId, "Введіть суму у гривнях (UAH):");
+        return;
+    }
+    if(text === "Інша конвертація") {
+        bot.sendMessage(chatId, "Введіть у форматі `100 USD EUR`", {parse_mode: "Markdown"});
+        return;
+    }
+});
+
+//Красиві повідомлення 
+bot.sendMessage(chatId,
+    `💵 *${amount} ${from}* = 💶 *${converted} ${to}*\n\n📊 Курс: _${rate.toFixed(2)}_`,
+    {parse_mode: "Markdown"}
+);
+
+//Help
+bot.onText(/\/help/, (msg) => {
+    bot.sendMessage(msg.chat.id,
+        "📌 Я валютний конвертер.\n\n" +
+        "Використання:\n" +
+        "• /eur 50 → переведе 50 EUR у гривні\n" +
+        "• 100 USD UAH → універсальний формат\n\n" +
+        "Або скористайся меню /menu 🚀"
+    );
+});
+
 if(isProduction) {
     //Webkook
     bot = new TelegramBot(token, { webHook: true });
