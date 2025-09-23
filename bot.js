@@ -14,6 +14,15 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 let bot;
 
+if(isProduction) {
+    //Webkook
+    bot = new TelegramBot(token, { webHook: true });
+} else {
+    //Local
+    bot = new TelegramBot(token, { polling: true });
+    console.log('Bot running locally in polling mode');
+}
+
 //Меню команд
 bot.setMyCommands([
     { command: '/start', description: 'Запустити бота' },
@@ -79,15 +88,6 @@ bot.onText(/\/help/, (msg) => {
         "Або скористайся меню /menu 🚀"
     );
 });
-
-if(isProduction) {
-    //Webkook
-    bot = new TelegramBot(token, { webHook: true });
-} else {
-    //Local
-    bot = new TelegramBot(token, { polling: true });
-    console.log('Bot running locally in polling mode');
-}
 
 const app = express();
 app.use(bodyParser.json());
