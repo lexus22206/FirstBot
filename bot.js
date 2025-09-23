@@ -125,12 +125,6 @@ bot.onText(/\/help/, (msg) => {
 
 // ---- Команди та логіка бота ---- 
 
-// /start
-// bot.onText(/\/start/, (msg) => {
-//     console.log("Отримано команду /start від:", msg.from.username || msg.from.first_name);
-//     bot.sendMessage(msg.chat.id, `Привіт! ${msg.from.first_name || 'друг'}! Я валютний конвертер \nПриклад: 100 USD UAH\nКоманди:\n/usd 100\n/eur 100`);
-// });
-
 // /usd N
 bot.onText(/\/usd (\d+(\.\d+)?)/, async (msg, match) => {
     const chatId = msg.chat.id;
