@@ -14,6 +14,13 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 let bot;
 
+//Меню команд
+bot.setMyCommands([
+    { command: '/start', description: 'Запустити бота' },
+    { command: '/menu', description: 'Меню валют' },
+    { command: '/help', description: 'Ljdslrf' }
+]);
+
 if(isProduction) {
     //Webkook
     bot = new TelegramBot(token, { webHook: true });
