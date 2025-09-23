@@ -66,15 +66,15 @@ bot.onText(/\/start/, (msg) => {
 
 //Меню з кнопками
 bot.onText(/\/menu/, (msg) => {
-    bot.sendMessage(msg.chat.id, "Оберіть валюту для конвертації:", {
-        reply_markup: {
-            keyboard: [
-                ["USD → UAH", "EUR → UAH"],
-                ["UAH → USD", "UAH → EUR"],
-                ["Інша конвертація"]
-            ],
-            resize_keyboard: true, //робить кнопки компактними
-            one_time_keyboard: false //меню не зникає після натискання
+    bot.sendMessage(msg.chat.id, "📌 Оберіть валюту:", {
+      reply_markup: {
+        keyboard: [
+          ["USD → UAH", "EUR → UAH"],
+          ["UAH → USD", "UAH → EUR"],
+          ["Інша конвертація"]
+        ],
+        resize_keyboard: true,
+        one_time_keyboard: false
         }
     });
 });
