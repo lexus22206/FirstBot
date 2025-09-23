@@ -106,12 +106,6 @@ bot.on('message', async (msg) => {
     }
 });
 
-//Красиві повідомлення 
-bot.sendMessage(chatId,
-    `💵 *${amount} ${from}* = 💶 *${converted} ${to}*\n\n📊 Курс: _${rate.toFixed(2)}_`,
-    {parse_mode: "Markdown"}
-);
-
 //Help
 bot.onText(/\/help/, (msg) => {
     bot.sendMessage(msg.chat.id,
