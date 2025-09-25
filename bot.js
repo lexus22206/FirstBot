@@ -69,44 +69,49 @@ bot.onText(/\/start/, (msg) => {
 bot.onText(/\/menu/, (msg) => {
     bot.sendMessage(msg.chat.id, "Оберіть валюту для конвертації:", {
         reply_markup: {
-            keyboard: [
-                ["USD → UAH", "EUR → UAH"],
-                ["UAH → USD", "UAH → EUR"],
-                ["Інша конвертація"]
-            ],
-            resize_keyboard: true, //робить кнопки компактними
-            one_time_keyboard: false //меню не зникає після натискання
+            inline_keyboard: [
+                [
+                    { text: "USD → UAH", callback_data: "usd_uah" },
+                    { text: "EUR → UAH", callback_data: "eur_uah" }
+                ],
+                [
+                    { text: "UAH → USD", callback_data: "uah_usd" },
+                    { text: "UAH → EUR", callback_data: "uah_eur" }
+                ],
+                [
+                    { text: "Інша конвертація", callback_data: "custom" }
+                ]
+            ]
         }
     });
 });
 
 //Реакція на кнопки
-bot.on('message', async (msg) => {
-    const text = msg.text;
-    const chatId = msg.chat.id;
+bot.on('callback_query', async (query) => {
+    const chatId = query.message.chat.id;
+    const data = query.data;
 
-    if(text === "USD → UAH") {
+    if(data === "usd_uah") {
         bot.sendMessage(chatId, "Введіть суму у USD, яку потрібно конвертувати");
-        return;
     }
-    if(text === "EUR → UAH") {
+    if(data === "eur_uah") {
         bot.sendMessage(chatId, "Введіть суму у EUR:");
-        return;
     }
-    if(text === "UAH → USD") {
-        bot.sendMesage(chatId, "Введіть суму у гривнях (UAH):");
-        return;
-    }
-    if(text === "UAH → EUR") {
+    if(data === "uah_usd") {
         bot.sendMessage(chatId, "Введіть суму у гривнях (UAH):");
-        return;
     }
-    if(text === "Інша конвертація") {
+    if(data === "uah_eur") {
+        bot.sendMessage(chatId, "Введіть суму у гривнях (UAH):");
+    }
+    if(data === "custom") {
         bot.sendMessage(chatId, "Введіть у форматі `100 USD EUR`", {parse_mode: "Markdown"});
-        return;
     }
 
-    //Універсальний конвертер "100 USD UAH"
+    bot.answerCallbackQuery(query.id);
+});
+
+//Універсальний конвертер "100 USD UAH"
+bot.on("message", async (msg) => {
     if(!msg.text  || msg.text.startsWith('/')) return;
 
     const parts = msg.text.trim().split(/\s+/);
