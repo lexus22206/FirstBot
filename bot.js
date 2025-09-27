@@ -128,10 +128,10 @@ bot.on("message", async (msg) => {
     //Якщо є "стан" кнопки
     if(state && state.from && state.to) {
         const amount = parseFloat(msg.text.replace(',','.'));
-        if(isNaN(amount)) {
+        if(!isNaN(amount)) {
             try {
                 const response = await axios.get(
-                    `https://api.currencylayer.com/convert?access_key=${currencyApiKey}&from=${state.from}&to=${state.to}$amount=${amount}`
+                    `https://api.currencylayer.com/convert?access_key=${currencyApiKey}&from=${state.from}&to=${state.to}&amount=${amount}`
                 );
                 if(response.data.success) {
                     bot.sendMessage(chatId, `${amount} ${state.from} = ${response.data.result.toFixed(2)} ${state.to}`);
