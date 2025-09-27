@@ -14,6 +14,8 @@ const url = process.env.BOT_URL || 'https://firstbot-san3.onrender.com';
 const isProduction = process.env.NODE_ENV === 'production';
 
 let bot;
+let exchangeRates = {}; //тут зберігатимуться курси
+let lastUpdate = null;
 
 if(isProduction) {
     //Webkook
@@ -45,6 +47,49 @@ if(isProduction) {
         }
     });
 }
+
+//Функція для оновлення курсів
+async function updateRates() {
+    try {
+        const response = await axios.get(`https://api.currencylayer.com/live?access_key=${currencyApiKey}&currencies=UAH,EUR,USD`);
+
+        if(response.data.success) {
+            exchangeRates = {
+                usd: response.data.quotes.USDUAH, 
+                eur: response.data.quotes.EURUAH,
+                uahToUsd: 1 / response.data.quotes.USDUAH,
+                uahToEur: 1 / response.data.quotes.EURUAH
+            };
+            lastUpdate = new Date();
+            console.log("Курси оновлено:", exchangeRates);
+        } else {
+            console.error("Помилка API:", response.data.error);
+        }
+    } catch (error) {
+        console.error("Помилка при отриманні курсівЖ", error.message);
+    }
+}
+
+//Оновлення курсів при запуску і кожні 30 хв
+updateRates();
+setInterval(updateRates, 30 * 60 * 1000);
+
+//Команда для показу курсів
+bot.onText(/\/rates/, (msg) => {
+    if (!exchangeRates.usd) {
+        bot.sendMessage(msg.chat.id,"Курси ще не завантаженію Спробуйте пізніше ⏳");
+        return;
+    }
+
+    bot.sendMessage(msg.chat.id, `
+        📊 Поточні курси:
+        💵 1 USD = ${exchangeRates.usd.toFixed(2)} UAH
+        💶 1 EUR = ${exchangeRates.eur.toFixed(2)} UAH
+        🇺🇦 1 UAH = ${exchangeRates.uahToUsd.toFixed(4)} USD | ${exchangeRates.uahToEur.toFixed(4)} EUR
+        ⏱ Оновлено: ${lastUpdate.toLocaleTimeString()}
+    `);
+});
+
 //Меню команд
 bot.setMyCommands([
     { command: '/start', description: 'Запустити бота' },
