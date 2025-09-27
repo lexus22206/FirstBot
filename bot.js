@@ -86,33 +86,70 @@ bot.onText(/\/menu/, (msg) => {
     });
 });
 
+//Сховище станів користувачів
+const userState = new Map();
+
 //Реакція на кнопки
 bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
     const data = query.data;
 
     if(data === "usd_uah") {
+        userState.set(chatId, { from: "USD", to: "UAH" });
         bot.sendMessage(chatId, "Введіть суму у USD, яку потрібно конвертувати");
     }
     if(data === "eur_uah") {
+        userState.set(chatId, { from: "EUR", to: "UAH" });
         bot.sendMessage(chatId, "Введіть суму у EUR:");
     }
     if(data === "uah_usd") {
+        userState.set(chatId, { from: "UAH", to: "USD" });
         bot.sendMessage(chatId, "Введіть суму у гривнях (UAH):");
     }
     if(data === "uah_eur") {
+        userState.set(chatId, { from: "UAH", to: "EUR" });
         bot.sendMessage(chatId, "Введіть суму у гривнях (UAH):");
     }
     if(data === "custom") {
+        userState.set(chatId, { from: null, to: null });
         bot.sendMessage(chatId, "Введіть у форматі `100 USD EUR`", {parse_mode: "Markdown"});
     }
 
     bot.answerCallbackQuery(query.id);
 });
 
-//Універсальний конвертер "100 USD UAH"
+//Обробка повідомлень
 bot.on("message", async (msg) => {
     if(!msg.text  || msg.text.startsWith('/')) return;
+
+    const chatId = msg.chat.id;
+    const state = userState.get(chatId);
+
+    //Якщо є "стан" кнопки
+    if(state && state.from && state.to) {
+        const amount = parseFloat(msg.text.replace(',','.'));
+        if(isNaN(amount)) {
+            try {
+                const response = await axios.get(
+                    `https://api.currencylayer.com/convert?access_key=${currencyApiKey}&from=${state.from}&to=${state.to}$amount=${amount}`
+                );
+                if(response.data.success) {
+                    bot.sendMessage(chatId, `${amount} ${state.from} = ${response.data.result.toFixed(2)} ${state.to}`);
+                } else {
+                    bot.sendMessage(chatId, "Не вдалося конвертувати валюту.");
+                }
+            } catch (err) {
+                console.error('Convert error:', err.message);
+                bot.sendMessage(chatId, "Помилка при отриманні курсу.");
+            }
+        } else {
+            bot.sendMessage(chatId, "Введіть правельне число.");
+        }
+
+        //після виконання очищаємо стан
+        userState.delete(chatId);
+        return;
+    }
 
     const parts = msg.text.trim().split(/\s+/);
     if(parts.length === 3) {
@@ -132,7 +169,7 @@ bot.on("message", async (msg) => {
                 console.error('Convert error:', err.message);
                 bot.sendMessage(msg.chat.id, "Помилка при отриманні курсу. Спробуйте пізніше.");
             }
-            return
+            return;
         }
     }
 
