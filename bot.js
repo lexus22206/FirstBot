@@ -52,11 +52,15 @@ async function updateRates() {
         const response = await axios.get(`https://api.currencylayer.com/live?access_key=${currencyApiKey}&currencies=UAH,EUR,USD`);
 
         if(response.data.success) {
+
+            const usdToUah = response.data.quotes.USDUAH;
+            const usdToEur = response.data.quotesUSDEUR;
+
             exchangeRates = {
-                usd: response.data.quotes.USDUAH, 
-                eur: response.data.quotes.EURUAH,
-                uahToUsd: 1 / response.data.quotes.USDUAH,
-                uahToEur: 1 / response.data.quotes.EURUAH
+                usd: usdToUah,                  //USD → UAH
+                eur: usdToUah / usdToEur,       //EUR → UAH (через USD)
+                uahToUsd: 1 / usdToUah,         //UAH → USD
+                uahToEur: usdToEur / usdToUah   //UAH → EUR
             };
             lastUpdate = new Date();
             console.log("Курси оновлено:", exchangeRates);
