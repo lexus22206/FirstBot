@@ -74,7 +74,7 @@ setInterval(updateRates, 30 * 60 * 1000);
 
 //Допоміжна функція конвертації
 function convertCurrency(amount, from, to) {
-    if(!exchangeRates.usd) return null;
+    if(!exchangeRates.usd || !exchangeRates.eur) return null;
 
     from = from.toUpperCase();
     to = to.toUpperCase();
@@ -85,6 +85,8 @@ function convertCurrency(amount, from, to) {
     else if(from === "EUR" && to === "UAH") result = amount * exchangeRates.eur;
     else if(from === "UAH" && to === "USD") result = amount * exchangeRates.uahToUsd;
     else if(from === "UAH" && to === "EUR") result = amount * exchangeRates.uahToEur;
+    else if(from === "USD" && to === "EUR") result = amount * exchangeRates.usd / exchangeRates.eur;
+    else if(from === "EUR" && to === "USD") result = amount * exchangeRates.eur / exchangeRates.usd;
     else return null;
 
     return result;
@@ -117,12 +119,14 @@ bot.onText(/\/rates/, (msg) => {
         return bot.sendMessage(msg.chat.id,"Курси ще не завантажені. Спробуйте пізніше ⏳");
     }
 
+    const updatedAt = lastUpdate ? lastUpdate.toLocaleTimeString() : "невідомо";
+
     bot.sendMessage(msg.chat.id, `
         📊 Поточні курси:
         💵 1 USD = ${exchangeRates.usd.toFixed(2)} UAH
         💶 1 EUR = ${exchangeRates.eur.toFixed(2)} UAH
         🇺🇦 1 UAH = ${exchangeRates.uahToUsd.toFixed(4)} USD | ${exchangeRates.uahToEur.toFixed(4)} EUR
-        ⏱ Оновлено: ${lastUpdate.toLocaleTimeString()}
+        ⏱ Оновлено: ${updatedAt}
     `);
 });
 
@@ -138,6 +142,9 @@ bot.onText(/\/menu/, (msg) => {
                 [
                     { text: "UAH → USD", callback_data: "uah_usd" },
                     { text: "UAH → EUR", callback_data: "uah_eur" }
+                ],
+                [
+                    { text: "USD ↔ EUR", callback_data: "usd_eur"}
                 ],
                 [
                     { text: "Інша конвертація", callback_data: "custom" }
@@ -185,7 +192,7 @@ bot.on("message", (msg) => {
                 bot.sendMessage(chatId, "Не підтримується така конвертація.");
             }
         } else {
-            bot.sendMessage(chatId, "Введіть правельне число.");
+            bot.sendMessage(chatId, "Введіть правильне число.");
         }
 
         //після виконання очищаємо стан
